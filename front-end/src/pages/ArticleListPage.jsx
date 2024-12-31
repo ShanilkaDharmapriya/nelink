@@ -6,7 +6,7 @@ export default function ArticleListPage() {
         <>
         <h1>Articles</h1>
         <ArticlesList articles={articles}/>
-
+        <h1>New</h1>
         </>
     );
 }
