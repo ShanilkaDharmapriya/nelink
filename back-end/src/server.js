@@ -1,34 +1,62 @@
 import express from 'express';
-
-const articleinfo = [
-    {articleName:'learn-react',upvotes:0,comments:[]},
-    {articleName:'Mongoth',upvotes:0,comments:[]}
-]
+import {MongoClient,ReturnDocument,ServerApiVersion} from 'mongodb'
 
 const app = express();
 
 app.use(express.json());
 
-app.post('/api/articles/:name/upvotes',(req,res)=>{
-    const article=articleinfo.find(a=> a.articleName === req.params.name);
-    article.upvotes += 1;
+let db;
+
+async function connectToDB(){
+    const uri='mongodb://127.0.0.1:27017';
+
+    const client = new MongoClient(uri,{
+        serverApi:{
+            version:ServerApiVersion.v1,
+            strict:true,
+            deprecationErrors:true,
+        }
+    });
+    await client.connect();
+
+    db=client.db('full-stack-db')
+}
+
+app.get('/api/articles/:name',async(req,res)=>{
+    
+    const {name} = req.params;
+    const article=await db.collection('articles').findOne({name})
     res.json(article)
 })
 
-app.post('/api/articles/:name/comments',(req,res)=>{
-    const {name} = req.params;
-    const {postedby,text}= req.body;
+app.post('/api/articles/:name/upvotes',async(req,res)=>{
+    const {name}=req.params;
 
-    const article=articleinfo.find(a=>a.articleName===name);
-
-    article.comments.push({
-        postedby,
-        text
-    })
-    res.json(article);
-
+    const updatedArticle= await db.collection('articles').findOneAndUpdate({name},{
+        $inc:{upvotes:1}},{returnDocument:"after"},)
+        
+        res.json(updatedArticle);
 })
 
-app.listen(8000 , function(){
-    console.log('Server is listening on port 8000')
-});
+app.post('/api/articles/:name/comments',async(req,res)=>{
+    const {name} = req.params;
+    const {postedby,text}= req.body;
+    const newComment={postedby,text}
+
+    const updatedArticle = await db.collection('articles').findOneAndUpdate({name},{$push:{comments:newComment}},{
+        returnDocument:'after'
+    })
+
+    res.json(updatedArticle)
+})
+
+async function start(){
+    await connectToDB();
+
+    app.listen(8000 , function(){
+        console.log('Server is listening on port 8000')
+    });
+
+}
+
+start();

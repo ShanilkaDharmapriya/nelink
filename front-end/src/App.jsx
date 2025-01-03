@@ -3,13 +3,14 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 
-
 import './App.css'
 import HomePage from './pages/HomePage'
 import About from './pages/About';
-import ArticlePage from './pages/ArticlePage';
+import ArticlePage, {loader as articleLoader} from './pages/ArticlePage';
 import LayerOut from './pages/LayerOut';
 import ArticleListPage from './pages/ArticleListPage';
+import LoginPage from './pages/LoginPage'
+import CreateAcountPage from './pages/CreateAcountPage'
 
 const routes=[{
   path: "/",
@@ -26,7 +27,14 @@ const routes=[{
     element:<ArticleListPage />
   }, {
     path:'/articles/:name',
-    element:<ArticlePage />
+    element:<ArticlePage />,
+    loader:articleLoader,
+  },{
+    path:'/login',
+    element:<LoginPage/>
+  },{
+    path:'/createacount',
+    element:<CreateAcountPage/>
   }]
   
 }]
